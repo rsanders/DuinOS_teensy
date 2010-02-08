@@ -87,3 +87,14 @@ void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, byte val)
 }
 
 
+
+//##DuinOS overrides this function with a macro (DuinOS.h)
+//void delay(unsigned long ms)
+
+void wiring_delay(unsigned long ms)
+{
+        unsigned long start = millis();
+        
+        while (millis() - start <= ms)
+                ;
+}

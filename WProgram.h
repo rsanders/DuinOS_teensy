@@ -13,6 +13,9 @@
 #include <avr/interrupt.h>
 #include "wiring.h"
 
+//##DiunOS is include here, because it's part of the core:
+#include "DuinOS.h"
+
 #ifdef __cplusplus
 #include "usb_api.h"
 #include "HardwareSerial.h"

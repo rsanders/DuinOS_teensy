@@ -30,6 +30,9 @@
 #include "usb_private.h"
 #include "core_pins.h"
 
+#define FREE_RTOS 1
+#define DuinOS 1
+
 // this doubles the analog input speed
 #define USE_ADC_HIGH_SPEED
 
@@ -1537,6 +1540,7 @@ volatile unsigned long timer0_micros_count = 0;
 volatile unsigned long timer0_millis_count = 0;
 volatile unsigned char timer0_fract_count = 0;
 
+#if !defined(DuinOS) && !defined(FREE_RTOS)
 void TIMER0_OVF_vect() __attribute__((naked));
 void TIMER0_OVF_vect()
 {
@@ -1602,7 +1606,34 @@ void TIMER0_OVF_vect()
 		  "M" (TIMER0_MICROS_INC)
 	);
 }
+#else
 
+volatile unsigned long timer0_overflow_count = 0;
+
+void arduino_increment_millis()
+{
+	// copy these to local variables so they can be stored in registers
+	// (volatile variables must be read from memory on every access)
+	unsigned long m = timer0_millis_count;
+	unsigned char f = timer0_fract_count;
+
+// no idea what this should be - rsanders
+#define FRACT_MAX 256
+
+	m += TIMER0_MILLIS_INC;
+	f += TIMER0_FRACT_INC;
+	if (f >= FRACT_MAX) {
+		f -= FRACT_MAX;
+		m += 1;
+	}
+
+	timer0_fract_count = f;
+	timer0_millis_count = m;
+	timer0_overflow_count++;
+}
+#endif
+
+#if !defined(DuinOS) && !defined(FREE_RTOS)
 
 void delay(uint32_t ms)
 {
@@ -1625,6 +1656,7 @@ void delay(uint32_t ms)
 	} while (timer0_millis_count - start <= ms);
 	sei();
 }
+#endif
 
 
 uint32_t _micros(void)
