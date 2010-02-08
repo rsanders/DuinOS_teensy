@@ -1,0 +1,2 @@
+#define CORE_TEENSY
+#define CORE_TEENSY_SERIAL
